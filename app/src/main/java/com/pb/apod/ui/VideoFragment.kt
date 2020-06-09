@@ -9,6 +9,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import at.huber.youtubeExtractor.VideoMeta
 import at.huber.youtubeExtractor.YouTubeExtractor
 import at.huber.youtubeExtractor.YtFile
@@ -23,12 +25,19 @@ import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.pb.apod.R
+import com.pb.apod.common.EspressoIdlingResource
+import com.pb.apod.common.extractYoutubeVideoId
+import org.kodein.di.KodeinAware
+import org.kodein.di.android.x.kodein
+import org.kodein.di.generic.instance
 import java.util.regex.Pattern
 
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-class VideoFragment : Fragment() {
-
+class VideoFragment : Fragment(),KodeinAware {
+    override val kodein by kodein()
+    private val factory: ApodViewModelFactory by instance<ApodViewModelFactory>()
+    private lateinit var apodViewModel: ApodViewModel
     private lateinit var playerView: PlayerView
     private var player: SimpleExoPlayer? = null
     private lateinit var playbackStateListener: PlaybackStateListener
@@ -46,6 +55,7 @@ class VideoFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_video, container, false)
+        apodViewModel = ViewModelProviders.of(requireActivity(), factory).get(ApodViewModel::class.java)
         if(savedInstanceState!=null){
             playbackPosition = savedInstanceState.getLong(STATE_RESUME_POSITION, 0L)
             currentWindow = savedInstanceState.getInt(STATE_RESUME_WINDOW, 0)
@@ -58,6 +68,7 @@ class VideoFragment : Fragment() {
     }
 
     private fun initializePlayer(uri: Uri) {
+        EspressoIdlingResource.increment()
         if (player == null) {
             val trackSelector = DefaultTrackSelector()
             trackSelector.setParameters(
@@ -75,6 +86,7 @@ class VideoFragment : Fragment() {
         player!!.seekTo(currentWindow, playbackPosition)
         player!!.addListener(playbackStateListener)
         player!!.prepare(mediaSource, false, false)
+        EspressoIdlingResource.decrement()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -147,7 +159,7 @@ class VideoFragment : Fragment() {
                     Log.e("APOD", sparseArray.toString())
                 }
             }
-        val videoId = extractYoutubeVideoId(getString(R.string.media_url))
+        val videoId = extractYoutubeVideoId(apodViewModel.apod.value!!.url)
         val BASE_URL = "https://www.youtube.com"
         val mYoutubeLink = BASE_URL + "/watch?v=" + videoId
         mExtractor.extract(mYoutubeLink, true, true)
@@ -156,16 +168,7 @@ class VideoFragment : Fragment() {
     }
 
 
-    fun extractYoutubeVideoId(ytUrl: String?): String? {
-        var vId: String? = null
-        val pattern = "(?<=watch\\?v=|/videos/|embed\\/)[^#\\&\\?]*"
-        val compiledPattern = Pattern.compile(pattern)
-        val matcher = compiledPattern.matcher(ytUrl)
-        if (matcher.find()) {
-            vId = matcher.group()
-        }
-        return vId
-    }
+
 
     private fun releasePlayer() {
 

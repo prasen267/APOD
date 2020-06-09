@@ -15,7 +15,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/sampleimage"
+
         android:contentDescription="@string/header_image" />
     <LinearLayout
         android:id="@+id/title_layout"
@@ -84,6 +84,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/title_layout_bg"
         android:orientation="vertical"
+
         app:layout_constraintBottom_toBottomOf="@+id/header_image"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">

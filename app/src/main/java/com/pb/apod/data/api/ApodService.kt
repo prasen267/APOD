@@ -20,7 +20,7 @@ interface ApodService {
     fun getApodByDate(@Query("date") date: String):Single<ApodResponse>
 
     companion object {
-        operator fun invoke(): ApodService {
+        operator fun invoke( networkConnectionInterceptor: NetworkConnectionInterceptor): ApodService {
 
             val requestInterceptor = Interceptor { chain ->
                 val url = chain.request()
@@ -43,7 +43,7 @@ interface ApodService {
                 .writeTimeout(60, TimeUnit.SECONDS)
             val logging = HttpLoggingInterceptor()
             logging.level = HttpLoggingInterceptor.Level.BODY
-            okhttpbuilder.addInterceptor(logging)
+            okhttpbuilder.addInterceptor(networkConnectionInterceptor)
 
 
 
