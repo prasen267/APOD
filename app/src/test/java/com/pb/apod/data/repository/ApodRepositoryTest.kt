@@ -51,7 +51,12 @@ class ApodRepositoryTest{
                 expectedApodResponse
             )
     }
-
+    fun givenAnSuccesfulNetworkingCallForByDate() {
+        every { apodService.getApodByDate("1995-11-11") } returns Single
+            .just(
+                expectedApodResponse
+            )
+    }
     @Test
     fun `given an unsuccessful network call,when getAPOD is called,an error should be emitted`() {
         givenAnUnsuccesfulNetworkingCall()
@@ -75,14 +80,15 @@ class ApodRepositoryTest{
     @Test
     fun `given a successful network call,when getAPOD is called, the correct APod is provided`() {
         givenAnSuccesfulNetworkingCall()
-        assertEquals(subject.getAPOD().blockingGet().date,expectedApodResponse.date)
-        assertEquals(subject.getAPOD().blockingGet().explanation,expectedApodResponse.explanation)
-        assertEquals(subject.getAPOD().blockingGet().hdurl,expectedApodResponse.hdurl)
-        assertEquals(subject.getAPOD().blockingGet().mediaType,expectedApodResponse.mediaType)
-        assertEquals(subject.getAPOD().blockingGet().serviceVersion,expectedApodResponse.serviceVersion)
-        assertEquals(subject.getAPOD().blockingGet().title,expectedApodResponse.title)
-        assertEquals(subject.getAPOD().blockingGet().url,expectedApodResponse.url)
+        assertEquals(subject.getAPOD().blockingGet(),expectedApodResponse)
 
+
+    }
+    @Test
+    fun`given a successful network call,when getApodByDate is called,the correct Apod should be provided`(){
+        givenAnSuccesfulNetworkingCallForByDate()
+
+        assertEquals(subject.getApodByDate("1995-11-11").blockingGet(),expectedApodResponse)
     }
 
 
