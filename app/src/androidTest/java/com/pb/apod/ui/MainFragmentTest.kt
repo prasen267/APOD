@@ -43,7 +43,7 @@ class MainFragmentTest : KodeinAware {
     private val instrumentationContext = InstrumentationRegistry.getInstrumentation().context
     override val kodein = Kodein.lazy {
         //import(androidXModule(this@ApodApplication))
-        bind() from singleton { ApodService() }
+        bind() from singleton { ApodService(instance()) }
         bind() from singleton { RxSchedulers() }
         bind() from singleton { ApodRepository(instance()) }
         bind() from provider { ApodViewModelFactory(instance(), instance()) }
