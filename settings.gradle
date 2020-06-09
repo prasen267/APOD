@@ -1,0 +1,2 @@
+rootProject.name='APOD'
+include ':app'
