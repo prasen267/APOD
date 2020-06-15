@@ -1,6 +1,7 @@
 package com.pb.apod.ui
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -9,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import at.huber.youtubeExtractor.VideoMeta
 import at.huber.youtubeExtractor.YouTubeExtractor
@@ -30,7 +30,7 @@ import com.pb.apod.common.extractYoutubeVideoId
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
-import java.util.regex.Pattern
+import java.util.*
 
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
@@ -153,8 +153,23 @@ class VideoFragment : Fragment(),KodeinAware {
                     videoMeta: VideoMeta
                 ) {
                     if (sparseArray != null) {
-                        uri = Uri.parse(sparseArray[22].url)
-                        initializePlayer(uri!!)
+                        val iTags: List<Int> = Arrays.asList(22, 137, 18)
+                        for (  iTag in iTags) {
+                            val ytFile: YtFile? = sparseArray.get(iTag)
+                            if(ytFile!=null){
+                                uri = Uri.parse(ytFile.url)
+                                initializePlayer(uri!!)
+                            }
+                        }
+
+                    }
+                    else{
+                        startActivity(
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("http://www.youtube.com/watch?v="+ extractYoutubeVideoId(apodViewModel.apod.value!!.url))
+                            )
+                        )
                     }
                     Log.e("APOD", sparseArray.toString())
                 }
@@ -162,7 +177,7 @@ class VideoFragment : Fragment(),KodeinAware {
         val videoId = extractYoutubeVideoId(apodViewModel.apod.value!!.url)
         val BASE_URL = "https://www.youtube.com"
         val mYoutubeLink = BASE_URL + "/watch?v=" + videoId
-        mExtractor.extract(mYoutubeLink, true, true)
+        mExtractor.extract(mYoutubeLink, false, false)
 
 
     }
